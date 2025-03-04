@@ -9,7 +9,7 @@ app.use(cors());
 
 // Endpoint para enviar un mensaje
 app.post('/messages', async (req, res) => {
-    const { sender, message, targetLang } = req.body;
+    const { sender, message, targetLang, timestamp } = req.body;
     if (!sender || !message || !targetLang) {
         return res.status(400).json({ error: "Todos los campos son requeridos" });
     }
@@ -23,11 +23,18 @@ app.post('/messages', async (req, res) => {
 
         // Guardar el mensaje en la base de datos
         const result = await pool.query(
-            "INSERT INTO messages (sender, message, translated, language) VALUES ($1, $2, $3, $4) RETURNING id",
-            [sender, message, translatedMessage, targetLang]
+            "INSERT INTO messages (sender, message, translated, language, timestamp) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+            [sender, message, translatedMessage, targetLang, timestamp || new Date().toISOString()]
         );
 
-        res.json({ id: result.rows[0].id, sender, message, translated: translatedMessage, language: targetLang });
+        res.json({
+            id: result.rows[0].id,
+            sender,
+            message,
+            translated: translatedMessage,
+            language: targetLang,
+            timestamp: timestamp || new Date().toISOString()
+        });
     } catch (error) {
         console.error("Error al guardar el mensaje:", error);
         res.status(500).json({ error: "Error al guardar el mensaje" });
@@ -45,6 +52,7 @@ app.get('/messages', async (req, res) => {
     }
 });
 
+// Endpoint para limpiar el chat
 app.delete('/messages', async (req, res) => {
     try {
         await pool.query("DELETE FROM messages");
@@ -54,7 +62,6 @@ app.delete('/messages', async (req, res) => {
         res.status(500).json({ error: "Error al limpiar mensajes" });
     }
 });
-
 
 const PORT = 4000;
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
