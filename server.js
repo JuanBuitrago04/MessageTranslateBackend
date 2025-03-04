@@ -15,18 +15,20 @@ app.post('/messages', async (req, res) => {
     }
 
     try {
-        // Traducir el mensaje desde español al idioma destino
+        console.log("Traduciendo mensaje...");
         const translatedMessage = await translateText(message, targetLang);
         if (!translatedMessage) {
+            console.error("Error: No se pudo traducir el mensaje");
             return res.status(500).json({ error: "Error en la traducción del mensaje" });
         }
 
-        // Guardar el mensaje en la base de datos
+        console.log("Guardando mensaje en la base de datos...");
         const result = await pool.query(
             "INSERT INTO messages (sender, message, translated, language, timestamp) VALUES ($1, $2, $3, $4, $5) RETURNING id",
             [sender, message, translatedMessage, targetLang, timestamp || new Date().toISOString()]
         );
 
+        console.log("Mensaje guardado correctamente");
         res.json({
             id: result.rows[0].id,
             sender,

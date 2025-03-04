@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS messages (
     message TEXT NOT NULL,
     translated TEXT NOT NULL,
     language VARCHAR(10) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
